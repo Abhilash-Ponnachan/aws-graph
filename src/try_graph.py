@@ -1,7 +1,13 @@
 from neo4j import GraphDatabase
+import configparser
 
 def get_credentials():
-	return ("neo4j", "Sample")
+	# read credetials from .secrets INI file
+	config = configparser.ConfigParser()
+	config.read('.secrets')
+	user = config['neo4j']['user']
+	password = config['neo4j']['password']
+	return (user, password)
 
 def get_movie(trnx, name):
 	for rec in trnx.run("MATCH (a:Person)-[r]->(m:Movie) "
