@@ -1,6 +1,7 @@
 # import necessary modules/packages
 import enum
 from collections import namedtuple
+from utils import *
 
 # enum for resource types
 class ResType(enum.Enum):
@@ -46,6 +47,7 @@ class ResourceLoader:
         return None
     extract_name = staticmethod(extract_name)
 
+    @entry_deco("++++++ loading VPCS ... ++++++")
     def load_vpcs(self, ec2):
         vpcs = ec2.describe_vpcs()
         for v in vpcs['Vpcs']:
@@ -61,4 +63,6 @@ class ResourceLoader:
                             is_default=v['IsDefault']
                             )
                         )
+        # return self for 'fluent api'
+        return self
 
