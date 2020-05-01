@@ -84,5 +84,9 @@ res_map = ResourceMap()
 
 res_loader = ResourceLoader(res_map)
 res_loader.load_vpcs(None)
-print(res_map.res_map)
+for res in res_map.res_map[ResType.VPCS].values():
+    res_typ = res.res_type
+    res_id = res.id
+    _, _, *props = res._asdict().items()
+    print(res_typ, res_id, props)
 

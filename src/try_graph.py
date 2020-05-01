@@ -1,15 +1,5 @@
 from neo4j import GraphDatabase
-import configparser
-
-def get_connection_info():
-	# read credetials from .secrets INI file
-	config = configparser.ConfigParser()
-	config.read('.secrets')
-	uri=config['neo4j']['uri']
-	user = config['neo4j']['user']
-	password = config['neo4j']['password']
-	dbname = config['neo4j']['dbname']
-	return (uri, user, password, dbname)
+from graph_dal import GraphRepository
 
 def get_movie(trnx, name):
 	for rec in trnx.run("MATCH (a:Person)-[r]->(m:Movie) "
@@ -17,12 +7,22 @@ def get_movie(trnx, name):
                          "RETURN a,r", name=name):
 		print(rec)
 
-uri, user, password, dbname = get_connection_info()
+def create_nodes(repo, tranx):
+	label = "VPC"
+	res_id = "vpc-03cfe3989f888508a"
+	props = [('name', 'Rand-VPC'), 
+			('cidr_block', '10.0.0.0/16'), 
+			('is_default', False)]
+	repo.create_node(tranx, label, res_id, props)
+    
+def create_rels(repo, tranx):
+	print('create rels with - {}'.format(tranx))
 
-driver = GraphDatabase.driver(uri, auth=(user, password), encrypted=False)
+
+# connect to graph db
+graph_repo = GraphRepository()
+graph_repo.connect()
 try:
-	with driver.session() as session:
-		session.read_transaction(get_movie, 'The Matrix')
-
+	graph_repo.populate_db(create_nodes, create_rels)
 finally:
-	driver.close()
+	graph_repo.close()
