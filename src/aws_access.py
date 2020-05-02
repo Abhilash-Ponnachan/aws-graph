@@ -17,6 +17,8 @@ VPC = namedtuple('VPC', 'res_type id name cidr_block is_default')
 SUB_NET = namedtuple('SUB_NET', 'res_type id name az_id vpc_id state az_default cidr_block')
 IGWS = namedtuple('IGWS', 'res_type id name vpc_id state')
 SEC_GRPS = namedtuple('SEC_GRPS', 'res_type id name desc vpc_id ingress_perms egress_perms')
+IGWS = namedtuple('IGWS', 'res_type id name vpc_id state')
+ROUTE_TBLS = namedtuple('ROUTE_TBLS', 'res_type id name vpc_id associations routes')
 
 # collection class that holds all our AWS resources
 class ResourceMap:
@@ -137,6 +139,28 @@ class ResourceLoader:
                             vpc_id=sg['VpcId'],
                             ingress_perms=in_perms,
                             egress_perms=out_perms
+                            )
+                        )
+        # return self for 'fluent api'
+        return self
+
+    @entry_deco("++++++ loading Route Tables ... ++++++")
+    def load_rt_tbls(self, ec2):
+        rt_tbls = ec2.describe_route_tables()
+        for rt in rt_tbls['RouteTables']:
+            id = rt['RouteTableId']
+            associations = rt['Associations']
+            routes = rt['Routes']
+            self.res_map.add_item(
+                        ResType.ROUTE_TBLS, 
+                        id, 
+                        ROUTE_TBLS(
+                            res_type=ResType.ROUTE_TBLS,
+                            id=id,
+                            name=ResourceLoader.extract_name(rt['Tags']),
+                            vpc_id=rt['VpcId'],
+                            associations=associations,
+                            routes=routes
                             )
                         )
         # return self for 'fluent api'

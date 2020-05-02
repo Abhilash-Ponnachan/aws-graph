@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     # load AWS resources
     res_loader.load_vpcs(ec2).load_Subnets(ec2) \
-        .load_Igws(ec2).load_sec_grps(ec2)
+        .load_Igws(ec2).load_sec_grps(ec2).load_rt_tbls(ec2)
 
     # callback handler to add nodes
     @entry_deco("++++++ Creating Nodes ... ++++++")
