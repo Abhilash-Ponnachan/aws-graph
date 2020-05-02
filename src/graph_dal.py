@@ -41,8 +41,8 @@ class GraphRepository:
         
         # join list items to one one string
         cmd = ''.join(txt for txt in cmd_bfr)
-        print(cmd)
-        #tranx.run(cmd)
+        #print(cmd)
+        tranx.run(cmd)
         
     # do db population using callbacks
     def populate_db(self, cb_create_node, cb_create_rels):
