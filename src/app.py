@@ -29,7 +29,21 @@ if __name__ == "__main__":
     # callback handler to add relationships
     @entry_deco("++++++ Creating Relationships ... ++++++")
     def create_rels(repo, tranx):
-        pass
+        def create_db_rel(src_type, src_id, dest_type, dest_id, rel):
+            #print("({}:{}) --[{}]-->({}:{})".format(src_id, src_type, rel, dest_id, dest_type))
+            repo.create_rel(tranx, src_type, src_id, dest_type, dest_id, rel)
+
+        for res_type, res_items in res_map.res_items():
+            if not res_items:
+                continue
+            for res_key, res_val in res_items.items():
+                all_props = res_map.flatten_props(res_val)
+                for oth_res_type, oth_res_item in res_map.other_res_items(res_type):
+                    for prop in all_props:
+                        match = oth_res_item.get(prop[1])
+                        if match:
+                            create_db_rel(res_type.name, res_key, oth_res_type.name, prop[1], prop[0])
+                        
 
     # connect to graph db
     graph_repo = GraphRepository()

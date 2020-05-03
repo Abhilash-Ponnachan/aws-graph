@@ -43,6 +43,12 @@ class GraphRepository:
         cmd = ''.join(txt for txt in cmd_bfr)
         #print(cmd)
         tranx.run(cmd)
+    
+    def create_rel(self, tranx, src_type, src_id, dest_type, dest_id, rel):
+        cmd = """MATCH (s:{0}), (t:{1}) WHERE (s.res_id=\"{2}\") AND (t.res_id=\"{3}\")
+         CREATE (s)-[:{4}]->(t)""".format(src_type, dest_type, src_id, dest_id, rel.upper())
+        #print(cmd)
+        tranx.run(cmd)
         
     # do db population using callbacks
     def populate_db(self, cb_create_node, cb_create_rels):

@@ -41,6 +41,43 @@ class ResourceMap:
 
     def res_items(self):
         return self.res_map.items()
+    
+    def other_res_items(self, exclude_res_type):
+        for res_type, res_items in self.res_items():
+            if res_type != exclude_res_type:
+                yield (res_type, res_items)
+    
+    def flatten_props(self, res_item):
+        # helper func to handle list items
+        def iter_list(items, acc):
+            for itm in items:
+                if isinstance(itm, list):
+                    iter_list(itm, acc)
+                elif isinstance(itm, dict):
+                    iter_dict(itm, acc)
+        # helper func to handle dict items
+        def iter_dict(items, acc):
+            for k, v in items.items():
+                if isinstance(v, list):
+                    iter_list(v, acc)
+                elif isinstance(v, dict):
+                    iter_dict(v, acc)
+                else:
+                    rslt.append((k, v))
+        
+        # outer func body to go over properties
+        _, _, *props = res_item._asdict().items()
+        rslt = []
+        for prop in props: 
+            key, value = prop
+            if isinstance(value, dict):
+                iter_dict(value, rslt) 
+            elif isinstance(value, list):
+                iter_list(value, rslt)            
+            else:            
+                rslt.append((key, value))
+        return rslt
+
 
 # adapter class to load AWS resources
 class ResourceLoader:
@@ -56,7 +93,7 @@ class ResourceLoader:
         return None
     extract_name = staticmethod(extract_name)
 
-    @entry_deco("++++++ loading VPCS ... ++++++")
+    @entry_deco("++++++ Fetching VPCS ... ++++++")
     def load_vpcs(self, ec2):
         vpcs = ec2.describe_vpcs()
         for v in vpcs['Vpcs']:
@@ -75,7 +112,7 @@ class ResourceLoader:
         # return self for 'fluent api'
         return self
 
-    @entry_deco("++++++ loading Subents ... ++++++")
+    @entry_deco("++++++ Fetching Subents ... ++++++")
     def load_Subnets(self, ec2):
         sbnts = ec2.describe_subnets()
         for sn in sbnts['Subnets']:
@@ -97,7 +134,7 @@ class ResourceLoader:
         # return self for 'fluent api'
         return self
 
-    @entry_deco("++++++ loading IGWs ... ++++++")
+    @entry_deco("++++++ Fetching IGWs ... ++++++")
     def load_Igws(self, ec2):
         igws = ec2.describe_internet_gateways()
         for igw in igws['InternetGateways']:
@@ -121,7 +158,7 @@ class ResourceLoader:
         # return self for 'fluent api'
         return self
     
-    @entry_deco("++++++ loading Security Groups ... ++++++")
+    @entry_deco("++++++ Fetching Security Groups ... ++++++")
     def load_sec_grps(self, ec2):
         sec_grps = ec2.describe_security_groups()
         for sg in sec_grps['SecurityGroups']:
@@ -144,7 +181,7 @@ class ResourceLoader:
         # return self for 'fluent api'
         return self
 
-    @entry_deco("++++++ loading Route Tables ... ++++++")
+    @entry_deco("++++++ Fetching Route Tables ... ++++++")
     def load_rt_tbls(self, ec2):
         rt_tbls = ec2.describe_route_tables()
         for rt in rt_tbls['RouteTables']:
